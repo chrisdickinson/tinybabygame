@@ -42,15 +42,15 @@ KeyboardController.prototype.update = function(dt) {
   this._lastDY = this._lastDY || 0;
 
   if(this.jumpDown && this.jumpCount > 0 && this.obj.dy >= 0) {
-    this.obj.dy += (dt/1000) * 20000;
+    this.obj.dy += (dt/1000) * 15000;
     this.obj.freefall = true;
     this.jumpCount -= (dt/1000);
   }
 
   if(this.leftDown) {
-    this.obj.dx = (dt/1000) * -10000 * (this.shiftDown ? 2 : 1);
+    this.obj.dx = (dt/1000) * -20000 * (this.shiftDown ? 2 : 1);
   } else if(this.rightDown) {
-    this.obj.dx = (dt/1000) * 10000 * (this.shiftDown ? 2 : 1);
+    this.obj.dx = (dt/1000) * 20000 * (this.shiftDown ? 2 : 1);
   } else {
     this.obj.dx = 0;
   }
