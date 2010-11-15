@@ -85,32 +85,38 @@ SceneObject.prototype.update = function(scene, dt) {
         // the above has a side effect of setting grounded if it's a ground collision.
         // sorry, programming gods.
         hit = true;
-        if(!this.freefall) { tarY = this.y; this.dy = 0; break; }
+        if(!this.freefall) { tarY = this.y; this.dy = 0; }
         var collision = 0;
-        if((obj.y + obj.h) - tarY > 0 && (obj.y+obj.h) - tarY1 < 0 && vecY < 0.0) {
+        if(this.freefall && (obj.y + obj.h) - tarY > 0 && (obj.y+obj.h) - tarY1 < 0 && vecY < 0.0) {
           this.freefall = false;
           this.y = obj.y + obj.h;
           this.dy = 0;
           collision = COLLIDES.TOP;
         }
-        else if((tarY1 - obj.y) > 0 && (tarY - obj.y) < 0 && vecX > 0.0) {
+        else if(this.freefall && (tarY1 - obj.y) > 0 && (tarY - obj.y) < 0 && vecX > 0.0) {
           this.freefall = true;
           this.y = obj.y - this.h;
           this.dy = 0;
           collision = COLLIDES.BOTTOM;
         }
         else if((obj.x + obj.w) - tarX > 0 && (obj.x + obj.w) - tarX1 < 0) {
-          this.dx = 0;
-          //this.x = obj.x + obj.w;
-          collision = COLLIDES.RIGHT;
+          if(obj.y + obj.h > this.y) {
+            collision = COLLIDES.RIGHT;
+            this.x = obj.x + obj.w;
+            this.dx = 0;
+          }
         }
         else if((tarX1 - obj.x) > 0) {
-          this.dx = 0;
-          //this.x = obj.x - this.w;
-          collision = COLLIDES.LEFT;
+          if(obj.y + obj.h > this.y) {
+            this.x = obj.x - this.w;
+            this.dx = 0;
+            collision = COLLIDES.LEFT;
+          }
+        } else { continue; }
+        if(collision) {
+          this.collide(obj, collision);
+          return;
         }
-        this.collide(obj, collision);
-        return;
       }
     }
   }
@@ -140,7 +146,7 @@ Viewport.prototype.focus = function(obj) {
 
   obj.addEventListener('collision', (function(vp) {
     return function(withObj, side) {
-      if(vp.focusObject && !vp.focusObject.freefall && side & COLLIDES.TOP) {
+      if(vp.focusObject && side & COLLIDES.TOP) {
         vp.lock(withObj.y+withObj.h);
       }
     };
