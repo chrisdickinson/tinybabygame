@@ -42,7 +42,7 @@ window.loadGame = function() {
   sceneObject.x = 0;
   sceneObject.y = 300;
   sceneObject.freefall = 1;
-  sceneObject.gravity = 98;
+  sceneObject.gravity = 60;
   sceneObject.collisions = game.COLLIDES.ALL;
   scene.add(sceneObject);
 
@@ -77,8 +77,8 @@ window.loadGame = function() {
     var tile = new SceneObject(ground_top);
     tile.h = 64;
     tile.w = 64;
-    tile.x = (200) + i * 64 - 1;
-    tile.y = 72;
+    tile.x = (400) + i * 64 - 1;
+    tile.y = 128;
     tile.collisions = game.COLLIDES.TOP;
     tile.static = true;
     tile.zIndex = 0;
@@ -87,12 +87,55 @@ window.loadGame = function() {
     var base = new SceneObject(ground_middle);
     base.h = 64;
     base.w = 64;
-    base.x = (200) + i * 64 - 1;
-    base.y = 8;
+    base.x = (400) + i * 64 - 1;
+    base.y = 96;
     base.collisions = game.COLLIDES.NONE;
     base.static = true;
     base.zIndex = 3;
     scene.add(base);
+
+    var base2 = new SceneObject(ground_middle);
+    base2.h = 64;
+    base2.w = 64;
+    base2.x = (400) + i * 64 - 1;
+    base2.y = 32;
+    base2.collisions = game.COLLIDES.NONE;
+    base2.static = true;
+    base2.zIndex = 3;
+    scene.add(base2);
+
+  }
+
+  for(var i = 0, len=3; i < len; ++i) {
+    var tile = new SceneObject(ground_top);
+    tile.h = 64;
+    tile.w = 64;
+    tile.x = (1000) + i * 64 - 1;
+    tile.y = 196;
+    tile.collisions = game.COLLIDES.ALL;
+    tile.static = true;
+    tile.zIndex = 0;
+    scene.add(tile);
+
+    var base = new SceneObject(ground_middle);
+    base.h = 64;
+    base.w = 64;
+    base.x = (1000) + i * 64 - 1;
+    base.y = 196 - 64;
+    base.collisions = game.COLLIDES.ALL;
+    base.static = true;
+    base.zIndex = 0;
+    scene.add(base);
+
+    var base2 = new SceneObject(ground_middle);
+    base2.h = 64;
+    base2.w = 64;
+    base2.x = (1000) + i * 64 - 1;
+    base2.y = 196 - 64 * 2;
+    base2.collisions = game.COLLIDES.ALL;
+    base2.static = true;
+    base2.zIndex = 0;
+    scene.add(base2);
 
   }
 
