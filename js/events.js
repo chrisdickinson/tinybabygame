@@ -4,11 +4,12 @@ var EventEmitter = function() {
   this.listeners = {};
 };
 
-EventEmitter.prototype.dispatchEvent = function(name, value) {
+EventEmitter.prototype.dispatchEvent = function(name) {
+  var args = Array.prototype.slice.call(arguments, 1);
   if(this.listeners[name]) {
     this.listeners[name].forEach(function(cb) {
       try {
-        cb(value);
+        cb.apply(this, args);
       } catch(err) {console.log(err.stack); }
     });
   }

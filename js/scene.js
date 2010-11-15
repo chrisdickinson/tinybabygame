@@ -34,18 +34,18 @@ var SceneObject = function(repr) {
 
 game.events.emitter(SceneObject);
 
-SceneObject.prototype.collide = function(withObj) {
+SceneObject.prototype.collide = function(withObj, side) {
   game.events.dispatchEvent('collision', {from:this, to:withObj});
-  this.dispatchEvent('collision', withObj);
+  this.dispatchEvent('collision', withObj, side);
 };
 
 SceneObject.prototype.update = function(scene, dt) {
   this.repr.update(dt);
 
-  this.dy = this.freefall && this.applyGravity ? this.dy-this.gravity : this.dy;
+  this.dy = this.dy-this.gravity;
 
   var vecX = this.dx*(dt/1000),
-      vecY = this.dy*(dt/1000) * this.freefall,
+      vecY = this.dy*(dt/1000),
       tarX = this.x + vecX,
       tarY = this.y + vecY,
       tarX1 = this.w + tarX,
@@ -68,33 +68,54 @@ SceneObject.prototype.update = function(scene, dt) {
     return item !== this;
   }, this);
 
+  var hit = false;
   if(potential.length) {
     var extent = vecX*vecX + vecY*vecY; // leave off the sqrt, we don't reaaally care
     while(potential.length) {
       var obj = potential.shift(),
           distX = obj.x - this.x,
           distY = obj.y - this.y,
-          dist = distX*distX + distY*distY,
-          grounded = 0;
+          dist = distX*distX + distY*distY;
 
-    if(//dist > (extent+innerLen) &&
+    if(dist > (extent+innerLen) &&
        ((tarX1 > obj.x && tarX1 < (obj.x+obj.w)) ||  // leading X edge inside
        (tarX > obj.x && tarX < (obj.x+obj.w)))   &&    // preceding X edge inside
        ((tarY1 > obj.y && tarY1 < (obj.y+obj.h)) ||   // top in object
-       (tarY > obj.y && tarY < (obj.y+obj.h) && ++grounded))) {   // bottom in object
+       (tarY > obj.y && tarY < (obj.y+obj.h)))) {   // bottom in object
         // the above has a side effect of setting grounded if it's a ground collision.
         // sorry, programming gods.
-        this.freefall = !grounded;
-        this.dx = grounded ? this.dx : 0;
-        this.dy = grounded ? 0 : this.dy;
-        this.y = grounded ? obj.y+obj.h : this.y; // snap to ground.
-        this.collide(obj);
-        // figure out getting us closer to the object we hit later.
+        hit = true;
+        if(!this.freefall) { tarY = this.y; this.dy = 0; break; }
+        var collision = 0;
+        if((obj.y + obj.h) - tarY > 0 && (obj.y+obj.h) - tarY1 < 0 && vecY < 0.0) {
+          this.freefall = false;
+          this.y = obj.y + obj.h;
+          this.dy = 0;
+          collision = COLLIDES.TOP;
+        }
+        else if((tarY1 - obj.y) > 0 && (tarY - obj.y) < 0 && vecX > 0.0) {
+          this.freefall = true;
+          this.y = obj.y - this.h;
+          this.dy = 0;
+          collision = COLLIDES.BOTTOM;
+        }
+        else if((obj.x + obj.w) - tarX > 0 && (obj.x + obj.w) - tarX1 < 0) {
+          this.dx = 0;
+          //this.x = obj.x + obj.w;
+          collision = COLLIDES.RIGHT;
+        }
+        else if((tarX1 - obj.x) > 0) {
+          this.dx = 0;
+          //this.x = obj.x - this.w;
+          collision = COLLIDES.LEFT;
+        }
+        this.collide(obj, collision);
         return;
       }
     }
   }
 
+  //this.freefall = hit;
   this.x = tarX;
   this.y = tarY;  
 };
@@ -106,7 +127,7 @@ var Viewport = function(width, height) {
   this.outerHeight = height;
   this.focusObject = null;
   this.lockHeight = null;
-  this.speed = 10;
+  this.speed = 500;
 };
 
 Viewport.prototype.focus = function(obj) {
@@ -118,8 +139,8 @@ Viewport.prototype.focus = function(obj) {
   })(this));
 
   obj.addEventListener('collision', (function(vp) {
-    return function(withObj) {
-      if(vp.focusObject && !vp.focusObject.freefall) {
+    return function(withObj, side) {
+      if(vp.focusObject && !vp.focusObject.freefall && side & COLLIDES.TOP) {
         vp.lock(withObj.y+withObj.h);
       }
     };
@@ -135,7 +156,7 @@ Viewport.prototype.unlock = function() {
 };
 
 Viewport.prototype.update = function(dt) {
-  if(this.focusObject && Math.abs(this.focusObject.dy) > 0.5) {
+  if(this.focusObject && Math.abs(this.focusObject.dy) > 8000) {
     this.unlock();
   }
 
@@ -143,6 +164,10 @@ Viewport.prototype.update = function(dt) {
     var direction = this.lockHeight - this.y;
     direction = direction/Math.abs(direction);
     this.y += (dt/1000) * direction * this.speed;
+
+    if(Math.abs(this.y - this.lockHeight) < (dt/1000)*this.speed) {
+      this.y = this.lockHeight;
+    }
   }
   var boundOffset = ((this.outerWidth-64) / 2.0),
       offsetLeft = (this.x + boundOffset),
@@ -186,7 +211,11 @@ var Scene = function(canvas) {
   game.events.addEventListener('tick', (function(scene) {
     return function(dt) {
       scene.objects.forEach(function(obj) {
-        obj.update(scene, dt);
+        if(!obj.static) {
+          obj.update(scene, dt);
+        } else {
+          obj.repr.update(dt);
+        }
       });
     };
   })(this));
