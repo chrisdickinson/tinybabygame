@@ -129,11 +129,18 @@ SceneObject.prototype.update = function(scene, dt) {
 var Viewport = function(width, height) {
   this.x = 0;
   this.y = 0;
+
+  this.radius = Math.sqrt(width*width + height*height);
+
   this.outerWidth = width;
   this.outerHeight = height;
   this.focusObject = null;
   this.lockHeight = null;
   this.speed = 500;
+};
+
+Viewport.prototype.getCircle = function() {
+  return [this.outerWidth * 0.5 + this.x, this.outerHeight * 0.5 + this.y, this.radius * 0.5];
 };
 
 Viewport.prototype.focus = function(obj) {
@@ -202,7 +209,8 @@ Viewport.prototype.transform = function(attachment, coords) {
   if(attachment === FIXED) {
     return [coords[0], this.outerHeight - coords[1] - coords[3], coords[2], coords[3]];
   } else {
-    return [coords[0] - this.x, this.outerHeight - coords[1] - coords[3] + this.y, coords[2], coords[3]];
+    var ZOOM = 1.0;
+    return [coords[0] - this.x, this.outerHeight - coords[1] - coords[3] + this.y, coords[2], coords[3]].map(function(i) { return i * ZOOM; });
   }
 };
 
@@ -213,6 +221,9 @@ var Scene = function(canvas) {
   this.rightCollisions = [];
   this.topCollisions = [];
   this.bottomCollisions = [];
+  this.quadtree = new game.QuadTree(43690, 32768, 8);
+  this.fpObjects = [];
+  this.dynObjects = [];
 
   game.events.addEventListener('tick', (function(scene) {
     return function(dt) {
@@ -228,14 +239,14 @@ var Scene = function(canvas) {
 };
 
 Scene.prototype.add = function(obj) {
-  for(var i = 0, len = this.objects.length; i < len && obj.zIndex < this.objects[i].zIndex; ++i) {
-    // wait for the return. 
-  }
-  if(i === len) {
-    this.objects.unshift(obj);
+  if(obj.attachment === FIXED) {
+    this.fpObjects.push(obj);
+  } else if(obj.static) {
+    this.quadtree.rootNode.place(obj);
   } else {
-    this.objects.splice(i, 0, obj);
+    this.dynObjects.push(obj);
   }
+  this.objects.push(obj);
 
   if(obj.collisions) {
     if(obj.collisions & COLLIDES.LEFT) {
@@ -285,9 +296,19 @@ Scene.prototype.filter = function(mask, type) {
 };
 
 Scene.prototype.getFrameData = function(dt) {
-  return this.objects.map(function(item) {
-    var output = item.repr.getFrameData();
+  var pvs = this.fpObjects.slice();
+  pvs = pvs.concat(
+      this.quadtree.rootNode.
+        traverse(this.viewport.getCircle()).
+        concat(this.dynObjects).
+        sort(function(lhs, rhs) {
+          if(lhs.zIndex < rhs.zIndex) return 1;
+          if(lhs.zIndex > rhs.zIndex) return -1;
+          return 0;  
+        }));
 
+  return pvs.map(function(item) {
+    var output = item.repr.getFrameData();
     var position = this.viewport.transform(item.attachment, [item.x, item.y, item.w, item.h]);
     return output.concat(position);
   }, this);

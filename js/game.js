@@ -49,24 +49,24 @@ window.loadGame = function() {
   kb = new game.KeyboardController(sceneObject);
   scene.viewport.focus(sceneObject);
 
-  for(var i = 0, len = 20; i < len; ++i) {
+  for(var i = 0, len = 32000; i < len; ++i) {
     var tile = new SceneObject(ground_top);
     tile.h = 64;
     tile.w = 64;
     tile.x = i * 64 - 1;
-    tile.y = -16;
+    tile.y = 16;
     tile.collisions = game.COLLIDES.TOP;
     tile.static = true;
     tile.zIndex = 1;
     scene.add(tile);
   }
 
-  for(var i = 0, len = 20; i < len; ++i) {
+  for(var i = 0, len = 32000; i < len; ++i) {
     var tile = new SceneObject(ground_middle);
     tile.h = 64;
     tile.w = 64;
     tile.x = i * 64;
-    tile.y = -64;
+    tile.y = -64 + 16;
     tile.zIndex = 1;
     tile.collisions = game.COLLIDES.NONE;
     tile.static = true;
@@ -147,7 +147,7 @@ window.loadGame = function() {
   backgroundObj.x = 0;
   backgroundObj.dx = -0.01;
   backgroundObj.dy = -0.01;
-  backgroundObj.zIndex = -1;
+  backgroundObj.zIndex = 1000;
   backgroundObj.static = true;
   backgroundObj.collisions = game.COLLIDES.NONE;
   scene.add(backgroundObj);
