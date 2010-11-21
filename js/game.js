@@ -43,6 +43,7 @@ window.loadGame = function() {
   sceneObject.y = 300;
   sceneObject.freefall = 1;
   sceneObject.gravity = 60;
+  sceneObject.zIndex = -1;
   sceneObject.collisions = game.COLLIDES.ALL;
   scene.add(sceneObject);
 
@@ -112,17 +113,25 @@ window.loadGame = function() {
     tile.w = 64;
     tile.x = (1000) + i * 64 - 1;
     tile.y = 196;
-    tile.collisions = game.COLLIDES.ALL;
+    tile.collisions = game.COLLIDES.TOP;
     tile.static = true;
     tile.zIndex = 0;
     scene.add(tile);
+
+    if(i === 0) {
+      tile.collisions = tile.collisions | game.COLLIDES.LEFT;
+    }
+
+    if(i === len-1) {
+      tile.collisions = tile.collisions | game.COLLIDES.RIGHT;
+    }
 
     var base = new SceneObject(ground_middle);
     base.h = 64;
     base.w = 64;
     base.x = (1000) + i * 64 - 1;
     base.y = 196 - 64;
-    base.collisions = game.COLLIDES.ALL;
+    base.collisions = game.COLLIDES.LEFT | game.COLLIDES.RIGHT;
     base.static = true;
     base.zIndex = 0;
     scene.add(base);
@@ -132,7 +141,7 @@ window.loadGame = function() {
     base2.w = 64;
     base2.x = (1000) + i * 64 - 1;
     base2.y = 196 - 64 * 2;
-    base2.collisions = game.COLLIDES.ALL;
+    base.collisions = game.COLLIDES.LEFT | game.COLLIDES.RIGHT;
     base2.static = true;
     base2.zIndex = 0;
     scene.add(base2);
