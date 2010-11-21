@@ -1,6 +1,62 @@
 window.game = window.game || {};
 var gfx = {};
 
+var TileLayer = function(resource, hw, map, collisionMap) {
+  this.resource = resource;
+  this.tileWidth = hw;
+  this.map = map.replace(/\n/g,'').split('');
+  this.collisionMap = collisionMap.replace(/\n/g,'').split('');
+  this.mapRowLength = map.split('\n')[0].length;
+};
+
+TileLayer.prototype.update = function() { /* noop */ };
+
+TileLayer.prototype.getFrameData = function(tile) {
+  var tileNo = tile.tileNo,
+      width = this.resource.img.width,
+      tilesPerRow = width/this.tileWidth,
+      offsetY = ~~((this.tileWidth * tileNo) / width),
+      offsetX = tileNo - (offsetY * tilesPerRow);
+
+  return [this.resource.img, offsetX, offsetY, this.tileWidth, this.tileWidth]; 
+};
+
+TileLayer.prototype.generateSceneObjects = function(zIndex, offsetX, offsetY) {
+  offsetX = offsetX || 0;
+  offsetY = offsetY || 0;
+
+  var x = 0,
+      y = this.map.length/this.mapRowLength * this.tileWidth,
+      w = this.tileWidth,
+      tile,
+      obj,
+      objects = [];
+  for(var i = 0, len = this.map.length; i < len; ++i) {
+    x += this.tileWidth;
+    if(i % this.mapRowLength === 0) {
+      y -= this.tileWidth;
+      x = 0;
+    }
+    tile = this.map[i];
+
+    if(tile === ' ') continue;
+
+    tile = +tile;     // coerce to number.
+    obj = new SceneObject(this);
+    obj.h = obj.w = w;
+    obj.x = x + offsetX;
+    obj.y = y + offsetY;
+    obj.collisions = parseInt(this.collisionMap[i], 16); 
+    obj.static = true;
+    obj.zIndex = zIndex;
+    obj.attachment = game.ABSOLUTE;
+    obj.tileNo = tile;
+
+    objects.push(obj);
+  }
+  return objects;
+};
+
 var Animation = function(sprite, name, resource, strategy, options) {
   this.sprite = sprite;
   this.name = name;
@@ -108,4 +164,5 @@ gfx.Sprite = function(options) {
   return obj;
 };
 
+gfx.TileLayer = TileLayer;
 window.game.gfx = gfx;
