@@ -117,7 +117,6 @@ SceneObject.prototype.update = function(scene, dt) {
           }
         }
         if(obj.collisions & COLLIDES.BOTTOM && this.freefall && (tarY1 - obj.y) > 0 && (tarY - obj.y) < 0 && vecX > 0.0) {
-          console.log('bottom');
           this.dy = (obj.y - tarY1) * (dt/1000);
           collision = collision | COLLIDES.BOTTOM;
         }
