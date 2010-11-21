@@ -42,88 +42,100 @@ SceneObject.prototype.collide = function(withObj, side) {
 SceneObject.prototype.update = function(scene, dt) {
   this.repr.update(dt);
 
-  this.dy = this.dy-this.gravity;
+  var originalDY = this.dy;
 
-  var vecX = this.dx*(dt/1000),
-      vecY = this.dy*(dt/1000),
-      tarX = this.x + vecX,
-      tarY = this.y + vecY,
-      tarX1 = this.w + tarX,
-      tarY1 = this.h + tarY,
-      innerLen = this.h*2 + this.w*2,
+  this.dy = this.dy - this.gravity;
+  var vecX,
+      vecY,
+      tarX,
+      tarY,
+      tarX1,
+      tarY1,
       potential = [];
 
-  if(vecX > 0) {
-    potential = potential.concat(scene.filter(this.collisionProfile, COLLIDES.LEFT)); // grab potential left collisions
-  } else if(vecX < 0) {
-    potential = potential.concat(scene.filter(this.collisionProfile, COLLIDES.RIGHT)); // grab potential right collisions
-  }
-  if(vecY > 0) {
-    potential = potential.concat(scene.filter(this.collisionProfile, COLLIDES.BOTTOM));
-  } else if(vecY < 0) {
-    potential = potential.concat(scene.filter(this.collisionProfile, COLLIDES.TOP));
-  }
+  var calc = (function(s) {
+      return function() {
+        vecX = s.dx*(dt/1000);
+        vecY = s.dy*(dt/1000);
+        tarX = s.x + vecX;
+        tarY = s.y + vecY;
+        tarX1 = s.w + tarX;
+        tarY1 = s.h + tarY;
+      };
+  })(this);
+
+  calc();
+
+  var box = [
+      [Math.min(this.x, tarX), Math.min(this.y, tarY)],
+      [Math.max(this.w+this.x, tarX1), Math.max(this.y+this.h, tarY1)]
+    ],
+    center = [(box[1][0] - box[0][0]) * 0.5 + box[0][0], (box[1][1] - box[0][1]) * 0.5 + box[0][1]],
+    radius = Math.sqrt(Math.pow(box[1][0] - box[0][0], 2) + Math.pow(box[1][1] - box[0][1], 2));
+
+  potential = scene.quadtree.rootNode.traverse([center[0], center[1], radius*0.5]);
+
+  var filters = [(function(s) { return function(item) {
+    return item !== s;
+  };})(this), function(item) {
+    return item.collisions > 0;  
+  }];
 
   potential = potential.filter(function(item) {
-    return item !== this;
-  }, this);
+      return filters.map(function(f) { return f(item); }).reduce(function(x, y) { return x && y; });
+  });
 
-  var hit = false;
+  var originalY = this.y,
+      ff = true;
+
   if(potential.length) {
     var extent = vecX*vecX + vecY*vecY; // leave off the sqrt, we don't reaaally care
     while(potential.length) {
-      var obj = potential.shift(),
-          distX = obj.x - this.x,
-          distY = obj.y - this.y,
-          dist = distX*distX + distY*distY;
+      var obj = potential.shift();
 
-    if(dist > (extent+innerLen) &&
-       ((tarX1 > obj.x && tarX1 < (obj.x+obj.w)) ||  // leading X edge inside
+    if(((tarX1 > obj.x && tarX1 < (obj.x+obj.w)) ||  // leading X edge inside
        (tarX > obj.x && tarX < (obj.x+obj.w)))   &&    // preceding X edge inside
        ((tarY1 > obj.y && tarY1 < (obj.y+obj.h)) ||   // top in object
        (tarY > obj.y && tarY < (obj.y+obj.h)))) {   // bottom in object
-        // the above has a side effect of setting grounded if it's a ground collision.
-        // sorry, programming gods.
-        hit = true;
-        if(!this.freefall) { tarY = this.y; this.dy = 0; }
+
         var collision = 0;
-        if(this.freefall && (obj.y + obj.h) - tarY > 0 && (obj.y+obj.h) - tarY1 < 0 && vecY < 0.0) {
-          this.freefall = false;
-          this.y = obj.y + obj.h;
-          this.dy = 0;
-          collision = COLLIDES.TOP;
+        if(ff && obj.collisions & COLLIDES.TOP && (obj.y + obj.h) - tarY > 0 && (obj.y+obj.h) - tarY1 < 0 && vecY < 0.0) {
+          ff = false;
+          originalY = obj.y + obj.h;
+          collision = collision | COLLIDES.TOP;
         }
-        else if(this.freefall && (tarY1 - obj.y) > 0 && (tarY - obj.y) < 0 && vecX > 0.0) {
-          this.freefall = true;
-          this.y = obj.y - this.h;
-          this.dy = 0;
-          collision = COLLIDES.BOTTOM;
-        }
-        else if((obj.x + obj.w) - tarX > 0 && (obj.x + obj.w) - tarX1 < 0) {
-          if(obj.y + obj.h > this.y) {
-            collision = COLLIDES.RIGHT;
-            this.x = obj.x + obj.w;
-            this.dx = 0;
+        if(obj.collisions & COLLIDES.RIGHT && (obj.x + obj.w) - tarX > 0 && (obj.x + obj.w) - tarX1 < 0) {
+          if(obj.y + obj.h - tarY > 10) {
+            collision = collision | COLLIDES.RIGHT;
+            this.dx = ((obj.x + obj.w) - tarX) * (dt/1000);
           }
         }
-        else if((tarX1 - obj.x) > 0) {
-          if(obj.y + obj.h > this.y) {
-            this.x = obj.x - this.w;
-            this.dx = 0;
-            collision = COLLIDES.LEFT;
+        else if(obj.collisions & COLLIDES.LEFT && (tarX1 - obj.x) > 0) {
+          if(obj.y + obj.h - tarY > 10) {
+            this.dx = (obj.x - tarX1) * (dt/1000);
+            collision = collision | COLLIDES.LEFT;
           }
-        } else { continue; }
+        }
+        if(collision & (COLLIDES.TOP|COLLIDES.LEFT) == 0 && obj.collisions & COLLIDES.BOTTOM && this.freefall && (tarY1 - obj.y) > 0 && (tarY - obj.y) < 0 && vecX > 0.0) {
+          this.dy = (obj.y - tarY1) * (dt/1000);
+          collision = collision | COLLIDES.BOTTOM;
+        }
+
         if(collision) {
+          calc();
           this.collide(obj, collision);
-          return;
         }
       }
     }
   }
 
-  //this.freefall = hit;
+  this.freefall = ff;
+  if(!this.freefall) {
+    this.dy = 0;
+    tarY = originalY;
+  }
   this.x = tarX;
-  this.y = tarY;  
+  this.y = tarY;
 };
 
 var Viewport = function(width, height) {
