@@ -23,8 +23,8 @@ var KeyboardController = function(obj) {
   })(this));
 
   this.obj.addEventListener('collision', (function(kb) {
-    return function(withObj) {
-      if(!kb.obj.freefall) {
+    return function(withObj, side) {
+      if(side & game.COLLIDES.TOP) {
         // reset the jump counter when we hit the ground
         kb.jumpCount = kb.jumpMax;
       }
@@ -41,7 +41,7 @@ var KeyboardController = function(obj) {
 KeyboardController.prototype.update = function(dt) {
   this._lastDY = this._lastDY || 0;
 
-  if(this.jumpDown && this.jumpCount > 0 && this.obj.dy >= 0) {
+  if(this.jumpDown && this.jumpCount > 0) {
     this.obj.dy += (dt/1000) * 15000;
     this.obj.freefall = true;
     this.jumpCount -= (dt/1000);
