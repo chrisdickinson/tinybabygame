@@ -15,6 +15,44 @@ window.loadGame = function() {
       GROUND_TILE_TOP = factory.require('sprites/tiles/ground_top.gif'),
       gfx = game.gfx;
 
+  var layer0 = new TileLayer(GROUND_TILE_MIDDLE, 64, [
+    "    00000",
+    "000000000",
+    "000000000",
+    "000000000",
+  ].join('\n'),[
+    "    54446",
+    "544400000",
+    "000000000",
+    "000000000",
+  ].join('\n'));
+
+  var layer1 = new TileLayer(GROUND_TILE_TOP, 64, [
+    "000000",
+    "000   ",
+    "00    ",
+    "00    ",
+    "00    ",
+  ].join('\n'),[
+    "444FFF",
+    "000   ",
+    "00    ",
+    "00    ",
+    "00    ",
+  ].join('\n'));
+
+  layer0.generateSceneObjects(2, -2, -64).forEach(function(obj) {
+    scene.add(obj);
+  });
+
+  layer0.generateSceneObjects(3, 64*9-2, 64).forEach(function(obj) {
+    scene.add(obj);
+  });
+
+  layer1.generateSceneObjects(4, 0, 128).forEach(function(obj) {
+    scene.add(obj);
+  });
+
   var sprite = gfx.Sprite({
     'forever': gfx.Moving(HERO_STAND, gfx.loop, {'duration':2000, 'frames':2}),
   });
@@ -49,104 +87,6 @@ window.loadGame = function() {
 
   kb = new game.KeyboardController(sceneObject);
   scene.viewport.focus(sceneObject);
-
-  for(var i = 0, len = 32000; i < len; ++i) {
-    var tile = new SceneObject(ground_top);
-    tile.h = 64;
-    tile.w = 64;
-    tile.x = i * 64 - 1;
-    tile.y = 16;
-    tile.collisions = game.COLLIDES.TOP;
-    tile.static = true;
-    tile.zIndex = 1;
-    scene.add(tile);
-  }
-
-  for(var i = 0, len = 32000; i < len; ++i) {
-    var tile = new SceneObject(ground_middle);
-    tile.h = 64;
-    tile.w = 64;
-    tile.x = i * 64;
-    tile.y = -64 + 16;
-    tile.zIndex = 1;
-    tile.collisions = game.COLLIDES.NONE;
-    tile.static = true;
-    scene.add(tile);
-  }
-
-  for(var i = 0, len=5; i < len; ++i) {
-    var tile = new SceneObject(ground_top);
-    tile.h = 64;
-    tile.w = 64;
-    tile.x = (400) + i * 64 - 1;
-    tile.y = 128;
-    tile.collisions = game.COLLIDES.TOP;
-    tile.static = true;
-    tile.zIndex = 0;
-    scene.add(tile);
-
-    var base = new SceneObject(ground_middle);
-    base.h = 64;
-    base.w = 64;
-    base.x = (400) + i * 64 - 1;
-    base.y = 96;
-    base.collisions = game.COLLIDES.NONE;
-    base.static = true;
-    base.zIndex = 3;
-    scene.add(base);
-
-    var base2 = new SceneObject(ground_middle);
-    base2.h = 64;
-    base2.w = 64;
-    base2.x = (400) + i * 64 - 1;
-    base2.y = 32;
-    base2.collisions = game.COLLIDES.NONE;
-    base2.static = true;
-    base2.zIndex = 3;
-    scene.add(base2);
-
-  }
-
-  for(var i = 0, len=3; i < len; ++i) {
-    var tile = new SceneObject(ground_top);
-    tile.h = 64;
-    tile.w = 64;
-    tile.x = (1000) + i * 64 - 1;
-    tile.y = 196;
-    tile.collisions = game.COLLIDES.TOP;
-    tile.static = true;
-    tile.zIndex = 0;
-    scene.add(tile);
-
-    if(i === 0) {
-      tile.collisions = tile.collisions | game.COLLIDES.LEFT;
-    }
-
-    if(i === len-1) {
-      tile.collisions = tile.collisions | game.COLLIDES.RIGHT;
-    }
-
-    var base = new SceneObject(ground_middle);
-    base.h = 64;
-    base.w = 64;
-    base.x = (1000) + i * 64 - 1;
-    base.y = 196 - 64;
-    base.collisions = game.COLLIDES.LEFT | game.COLLIDES.RIGHT;
-    base.static = true;
-    base.zIndex = 0;
-    scene.add(base);
-
-    var base2 = new SceneObject(ground_middle);
-    base2.h = 64;
-    base2.w = 64;
-    base2.x = (1000) + i * 64 - 1;
-    base2.y = 196 - 64 * 2;
-    base.collisions = game.COLLIDES.LEFT | game.COLLIDES.RIGHT;
-    base2.static = true;
-    base2.zIndex = 0;
-    scene.add(base2);
-
-  }
 
   var backgroundObj = new SceneObject(background);
   backgroundObj.attachment = 1;
