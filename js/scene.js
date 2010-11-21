@@ -320,7 +320,7 @@ Scene.prototype.getFrameData = function(dt) {
         }));
 
   return pvs.map(function(item) {
-    var output = item.repr.getFrameData();
+    var output = item.repr.getFrameData(item);
     var position = this.viewport.transform(item.attachment, [item.x, item.y, item.w, item.h]);
     return output.concat(position);
   }, this);
