@@ -10,34 +10,44 @@ window.loadGame = function() {
   });
 
   var HERO_STAND = factory.require('sprites/stand.png'),
+      HERO_STAND_LEFT = factory.require('sprites/stand_left.png'),
+      HERO_JUMP_START_LEFT = factory.require('sprites/jump_start_left.png'),
+      HERO_JUMP_START_RIGHT = factory.require('sprites/jump_start_right.png'),
+      HERO_JUMP_LEFT = factory.require('sprites/jump_left.png'),
+      HERO_JUMP_RIGHT = factory.require('sprites/jump_right.png'),
+      HERO_RUN_RIGHT = factory.require('sprites/run_right.png'),
+      HERO_RUN_LEFT = factory.require('sprites/run_left.png'),
       BG = factory.require('sprites/sky.gif'),
-      GROUND_TILE_MIDDLE = factory.require('sprites/tiles/ground_middle.gif'),
-      GROUND_TILE_TOP = factory.require('sprites/tiles/ground_top.gif'),
+      GRASS_TILES = factory.require('sprites/tiles/grass.gif'),
       gfx = game.gfx;
 
-  var layer0 = new TileLayer(GROUND_TILE_MIDDLE, 64, [
+  var layer0 = new TileLayer(GRASS_TILES, 64, [
     "    00000",
-    "000000000",
-    "000000000",
-    "000000000",
+    "000013333",
+    "133344444",
+    "444444444",
+    "444444444",
   ].join('\n'),[
-    "    54446",
+    "    00000",
+    "000054446",
     "544400000",
     "000000000",
     "000000000",
   ].join('\n'));
 
-  var layer1 = new TileLayer(GROUND_TILE_TOP, 64, [
+  var layer1 = new TileLayer(GRASS_TILES, 64, [
     "000000",
-    "000   ",
-    "00    ",
-    "00    ",
-    "00    ",
+    "333332",
+    "44445 ",
+    "4445  ",
+    "445   ",
+    "45    ",
   ].join('\n'),[
+    "000000",
     "444FFF",
+    "00000 ",
+    "0000  ",
     "000   ",
-    "00    ",
-    "00    ",
     "00    ",
   ].join('\n'));
 
@@ -55,14 +65,13 @@ window.loadGame = function() {
 
   var sprite = gfx.Sprite({
     'forever': gfx.Moving(HERO_STAND, gfx.loop, {'duration':2000, 'frames':2}),
-  });
-
-  var ground_top = gfx.Sprite({
-    'forever': gfx.Moving(GROUND_TILE_TOP, gfx.loop, {duration:Infinity})
-  });
-
-  var ground_middle = gfx.Sprite({
-    'forever': gfx.Moving(GROUND_TILE_MIDDLE, gfx.loop, {duration:Infinity})
+    'forever_left': gfx.Moving(HERO_STAND_LEFT, gfx.loop, {'duration':2000, 'frames':2}),
+    'run_left': gfx.Moving(HERO_RUN_LEFT, gfx.loop, {'duration':100, 'frames':5}),
+    'run_right': gfx.Moving(HERO_RUN_RIGHT, gfx.loop, {'duration':100, 'frames':5}),
+    'jump_start_left': gfx.Moving(HERO_JUMP_START_LEFT, gfx.nextKey('jump_left'), {'duration':100, 'frames':2}),
+    'jump_left': gfx.Moving(HERO_JUMP_LEFT, gfx.loop, {'duration':100, 'frames':1}),
+    'jump_start_right': gfx.Moving(HERO_JUMP_START_RIGHT, gfx.nextKey('jump_right'), {'duration':100, 'frames':2}),
+    'jump_right': gfx.Moving(HERO_JUMP_RIGHT, gfx.loop, {'duration':100, 'frames':1}),
   });
 
   var background = gfx.Sprite({
@@ -71,8 +80,6 @@ window.loadGame = function() {
 
   background.start('forever');
   sprite.start('forever');
-  ground_top.start('forever');
-  ground_middle.start('forever');
 
   var sceneObject = new SceneObject(sprite);
   sceneObject.h = 64;
@@ -80,7 +87,7 @@ window.loadGame = function() {
   sceneObject.x = 0;
   sceneObject.y = 300;
   sceneObject.freefall = 1;
-  sceneObject.gravity = 60;
+  sceneObject.gravity = 30;
   sceneObject.zIndex = -1;
   sceneObject.collisions = game.COLLIDES.ALL;
   scene.add(sceneObject);

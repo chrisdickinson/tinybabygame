@@ -12,13 +12,18 @@ var TileLayer = function(resource, hw, map, collisionMap) {
 TileLayer.prototype.update = function() { /* noop */ };
 
 TileLayer.prototype.getFrameData = function(tile) {
+  if(tile.tileData) {
+    return tile.tileData;
+  }
+
   var tileNo = tile.tileNo,
       width = this.resource.img.width,
       tilesPerRow = width/this.tileWidth,
       offsetY = ~~((this.tileWidth * tileNo) / width),
       offsetX = tileNo - (offsetY * tilesPerRow);
 
-  return [this.resource.img, offsetX, offsetY, this.tileWidth, this.tileWidth]; 
+  tile.tileData = [this.resource.img, offsetX*this.tileWidth, offsetY*this.tileWidth, this.tileWidth, this.tileWidth]; 
+  return tile.tileData;
 };
 
 TileLayer.prototype.generateSceneObjects = function(zIndex, offsetX, offsetY) {
@@ -131,6 +136,10 @@ gfx.SpriteObject = function() {
 
 gfx.SpriteObject.prototype.getFrameData = function() {
   return this.animations[this.currentAnimation].getFrameData(this.state.frame);
+};
+
+gfx.SpriteObject.prototype.is = function(anim) {
+  return this.currentAnimation === anim;
 };
 
 gfx.SpriteObject.prototype.start = function(anim, atState) {
