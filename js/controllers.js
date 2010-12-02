@@ -48,7 +48,7 @@ KeyboardController.prototype.update = function(dt) {
     this.obj.dx -= 10 * (this.shiftDown ? 2 : 1);
   } else if(this.rightDown) {
     this.obj.dx += 10 * (this.shiftDown ? 2 : 1);
-  } else {
+  } else if(!this.obj.freefall) {
     this.obj.dx = 0;
   }
 
@@ -80,7 +80,7 @@ KeyboardController.prototype.jumpStop = function(ev) {
 };
 
 KeyboardController.prototype.leftStart = function(ev) {
-  if(!this.leftDown && !this.jumpDown) {
+  if(!this.leftDown && !this.obj.freefall) {
     this.obj.repr.start('run_left');
   }
   this.leftDown = true;
@@ -88,7 +88,7 @@ KeyboardController.prototype.leftStart = function(ev) {
 };
 
 KeyboardController.prototype.rightStart = function(ev) {
-  if(!this.rightDown && !this.jumpDown) {
+  if(!this.rightDown && !this.obj.freefall) {
     this.obj.repr.start('run_right');
   }
   this.rightDown = true;
@@ -96,7 +96,7 @@ KeyboardController.prototype.rightStart = function(ev) {
 };
 
 KeyboardController.prototype.leftStop = function(ev) {
-  if(!this.rightDown) {
+  if(!this.rightDown && !this.obj.freefall) {
     this.obj.repr.start('forever_left');
   }
   this.leftDown = false;
@@ -104,7 +104,7 @@ KeyboardController.prototype.leftStop = function(ev) {
 };
 
 KeyboardController.prototype.rightStop = function(ev) {
-  if(!this.leftDown) {
+  if(!this.leftDown && !this.obj.freefall) {
     this.obj.repr.start('forever');
   }
   this.rightDown = false;
