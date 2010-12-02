@@ -30,6 +30,8 @@ Installing and Playing
 Clone the repository, `cd` into it, run `python -m SimpleHTTPServer`. Open `http://localhost:8000/` in Chrome or Safari to be astounded by hyper realistic graphics,
 and possibly blast processing. "WASD" moves you around, space jumps, and holding shift while moving makes the game impossible to play (by design, I assure you.)
 
+![Tiny Baby Game The Game The Movie](http://neversaw.us/media/game.png)
+
 An Exploration in Javascript, Canvas, and Teenaged Hopes & Dreams
 ================================================================
 
