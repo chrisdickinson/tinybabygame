@@ -27,17 +27,17 @@ Renderer.prototype.render = function(dt) {
   if(accum > 1000) {
     window.fps = frames;
     frames = 0;
-    accum -= 1000;
+    while(accum > 1000) accum -= 1000;
   }
 
-  var drawImage = this.context.drawImage.bind(this.context);
+  var drawImage = this.context.drawImage;
   try {
     for(var i = 0, len = items.length; i < len; ++i) {
       // item -> [img, sx, sy, sw, sh; dx, dy, dw, dh]
       var item = items[i];
-      drawImage.call({}, item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
+      drawImage.call(this.context, item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
     }
-    this.context.fillText(''+window.fps+' : '+window.mode, 20, 20);
+    this.context.fillText(''+fps+' : '+mode+' : '+skips+' skips', 20, 20);
   }catch(err) { console.log(err.stack); game.loop.quit = 1; }
 }; 
 

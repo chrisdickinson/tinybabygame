@@ -10,10 +10,13 @@ window.addEventListener('message', function(ev) {
     ev.stopPropagation();
     for(var i = 0, len = timeouts.length; i < len; ++i)
       timeouts[i]();
-    window.postMessage('zero-interval', '*');
+
+    if(mode === 'setZeroInterval')
+      window.postMessage('zero-interval', '*');
   }
 }, true);
-window.postMessage('zero-interval', '*');
+
+//window.postMessage('zero-interval', '*');
 
 var setZeroInterval = function(fn) {
   return timeouts.push(fn);
@@ -24,6 +27,7 @@ var clearZeroInterval = function(i) {
 };
 
 mode = 'setInterval';
+skips = 0;
 var interval;
 
 document.addEventListener('keydown', function(ev) {
@@ -40,15 +44,23 @@ game.loop = function() {
       if(mode !== lastMode) {
         lastMode === 'setZeroInterval' ? clearZeroInterval(interval) : clearInterval(interval);
         lastMode = mode;
+
         interval = window[mode](it);
+        mode === 'setZeroInterval' && window.postMessage('zero-interval', '*');
         return;
       }
       lastMode = mode;
       now = Date.now();
       change = now - dt;
+      if(change < 15) {
+        ++skips;
+        return; 
+      }
       game.events.dispatchEvent('tick', change);
+
+      skips = 0;
       dt = now;
-  }, 1);
+  });
 
   /*
   var now = Date.now();

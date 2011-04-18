@@ -14,13 +14,13 @@ var KeyboardController = function(obj) {
     return function(ev) {
       kb.keyDown(ev);
     };
-  })(this));
+  })(this), true);
 
   document.addEventListener('keyup', (function(kb) {
     return function(ev) {
       kb.keyUp(ev);
     };
-  })(this));
+  })(this), true);
 
   this.obj.addEventListener('collision', (function(kb) {
     return function(withObj, side) {
