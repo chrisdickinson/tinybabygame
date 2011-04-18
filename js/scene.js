@@ -57,10 +57,10 @@ SceneObject.prototype.update = function(scene, dt) {
       return function() {
         vecX = s.dx*(dt/1000);
         vecY = s.dy*(dt/1000);
-        tarX = s.x + vecX;
-        tarY = s.y + vecY;
-        tarX1 = s.w + tarX;
-        tarY1 = s.h + tarY;
+        tarX = parseInt(s.x + vecX);
+        tarY = parseInt(s.y + vecY);
+        tarX1 = parseInt(s.w + tarX);
+        tarY1 = parseInt(s.h + tarY);
       };
   })(this);
 

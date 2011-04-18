@@ -2,7 +2,7 @@ window.game = window.game || {};
 
 var KeyboardController = function(obj) {
   this.obj = obj;
-  this.jumpMax = 0.4;
+  this.jumpMax = 200; 
   this.jumpCount = this.jumpMax;
 
   this.jumpDown = false;
@@ -14,13 +14,13 @@ var KeyboardController = function(obj) {
     return function(ev) {
       kb.keyDown(ev);
     };
-  })(this), true);
+  })(this), false);
 
   document.addEventListener('keyup', (function(kb) {
     return function(ev) {
       kb.keyUp(ev);
     };
-  })(this), true);
+  })(this), false);
 
   this.obj.addEventListener('collision', (function(kb) {
     return function(withObj, side) {
@@ -53,16 +53,15 @@ KeyboardController.prototype.update = function(dt) {
   }
 
   if(this.jumpDown && this.jumpCount > 0) {
-    this.obj.dy += 200 * this.jumpCount / 1.0;
+    this.obj.dy += 60;
     this.obj.freefall = true;
-    this.jumpCount -= (dt/1000);
+    this.jumpCount -= dt;
   }
 };
 
 KeyboardController.prototype.jumpStart = function(ev) {
   if(!this.obj.freefall) {
     this.dx *= 0.5;
-    console.log('uhh');
     if(this.obj.repr.is('forever_left') || this.obj.repr.is('run_left')) {
       this.obj.repr.start('jump_start_left');
     } else {
