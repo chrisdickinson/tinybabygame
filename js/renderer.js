@@ -3,6 +3,8 @@ var Renderer = function(canvas, scene) {
   this.canvas = canvas;
   this.scene = scene;
   this.context = this.canvas.getContext('2d');
+  this.context.fillStyle = 'white';
+  this.context.font         = 'bold 12px sans-serif';
   game.events.addEventListener('tick', (function(renderer) {
     return function(dt) {
       renderer.render(dt);
@@ -35,8 +37,7 @@ Renderer.prototype.render = function(dt) {
       var item = items[i];
       drawImage.call({}, item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
     }
-    this.context.font         = 'bold 30px sans-serif';
-    this.context.fillText(''+window.fps, 0, 58);
+    this.context.fillText(''+window.fps+' : '+window.mode, 20, 20);
   }catch(err) { console.log(err.stack); game.loop.quit = 1; }
 }; 
 

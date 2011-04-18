@@ -23,9 +23,27 @@ var clearZeroInterval = function(i) {
   return timeouts.splice(i, 1);
 };
 
+mode = 'setInterval';
+var interval;
+
+document.addEventListener('keydown', function(ev) {
+  if(ev.keyCode === 192) {
+    if(mode === 'setInterval') mode = 'setZeroInterval';
+    else mode = 'setInterval';
+  }
+}, true);
+
 game.loop = function() {
   dt = Date.now();
-  setZeroInterval(function() {
+  var lastMode = mode;
+  interval = window[mode](function it() {
+      if(mode !== lastMode) {
+        lastMode === 'setZeroInterval' ? clearZeroInterval(interval) : clearInterval(interval);
+        lastMode = mode;
+        interval = window[mode](it);
+        return;
+      }
+      lastMode = mode;
       now = Date.now();
       change = now - dt;
       game.events.dispatchEvent('tick', change);
