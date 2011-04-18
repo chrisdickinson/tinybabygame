@@ -25,14 +25,19 @@ Renderer.prototype.render = function(dt) {
   if(accum > 1000) {
     window.fps = frames;
     frames = 0;
-    accum = 0;
+    accum -= 1000;
   }
+
+  var drawImage = this.context.drawImage.bind(this.context);
   try {
     for(var i = 0, len = items.length; i < len; ++i) {
       // item -> [img, sx, sy, sw, sh; dx, dy, dw, dh]
-      this.context.drawImage.apply(this.context, items[i]);
+      var item = items[i];
+      drawImage.call({}, item[0], item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
     }
-  }catch(err) { console.log(err); game.loop.quit = 1; }
+    this.context.font         = 'bold 30px sans-serif';
+    this.context.fillText(''+window.fps, 0, 58);
+  }catch(err) { console.log(err.stack); game.loop.quit = 1; }
 }; 
 
 var ResourceFactory = function() {
